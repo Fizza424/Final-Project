@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "fizza424/final-project"   // change if repo name is different
+        DOCKER_IMAGE = "fizza424/dockerhub_repo:latest"
     }
 
     stages {
@@ -23,7 +23,7 @@ pipeline {
         stage('Build Docker image') {
             steps {
                 powershell """
-                    docker build -t $env:DOCKER_IMAGE .
+                    docker build -t ${env.DOCKER_IMAGE} .
                 """
             }
         }
@@ -33,7 +33,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     powershell """
                         echo "$env:DOCKER_PASS" | docker login -u "$env:DOCKER_USER" --password-stdin
-                        docker push $env:DOCKER_IMAGE
+                        docker push ${env.DOCKER_IMAGE}
                     """
                 }
             }
@@ -41,20 +41,17 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                powershell """
-                    echo "Here you can run SSH/Ansible/Terraform commands to deploy to EC2"
-                """
+                powershell 'echo "Deploy step placeholder (to be filled)"'
             }
         }
 
         stage('Backup logs to S3') {
             steps {
-                powershell """
-                    aws s3 cp C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\devops-demo-pipeline2\\logs s3://your-s3-bucket-name/ --recursive
-                """
+                powershell 'echo "Backup step placeholder (to be filled)"'
             }
         }
     }
 }
+
 
 
