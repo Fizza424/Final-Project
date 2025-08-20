@@ -1,10 +1,10 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = "fizza424/dockerhub_repo:latest"    // must be username/repo:tag
+        DOCKER_IMAGE = "fizza424/dockerhub_repo:latest"   // fixed to your Docker Hub repo
         EC2_USER = "ec2-user"
         EC2_HOST = "13.235.78.253"                        // replace with your EC2 public IP
-        PEM_FILE = "C:/Users/HP/Downloads/fizza-ec2-key.pem"  // local path to your key
+        PEM_FILE = "C:/Users/HP/Downloads/fizza-ec2-key.pem"  // path to your key
         S3_BUCKET = "fizza-devops-logs"                   // replace with your bucket name
     }
     stages {
@@ -56,3 +56,5 @@ pipeline {
         }
     }
 }
+
+
