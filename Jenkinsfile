@@ -1,60 +1,60 @@
 pipeline {
     agent any
+
     environment {
-        DOCKER_IMAGE = "fizza424/dockerhub_repo:latest"
-        EC2_USER = "ec2-user"
-        EC2_HOST = "13.235.78.253"     // your EC2 IP
-        S3_BUCKET = "fizza-devops-logs"
+        DOCKER_IMAGE = "fizza424/final-project"   // change if repo name is different
     }
+
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main',
+                    url: 'https://github.com/Fizza424/Final-Project.git',
+                    credentialsId: 'pat'
             }
         }
+
+        stage('List files in workspace') {
+            steps {
+                powershell "dir"
+            }
+        }
+
         stage('Build Docker image') {
             steps {
-                powershell "docker build -t ${DOCKER_IMAGE} ."
+                powershell """
+                    docker build -t $env:DOCKER_IMAGE .
+                """
             }
         }
+
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub',
-                                                 usernameVariable: 'DOCKER_USER',
-                                                 passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     powershell """
-                        echo $env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin
-                        docker push ${DOCKER_IMAGE}
+                        echo "$env:DOCKER_PASS" | docker login -u "$env:DOCKER_USER" --password-stdin
+                        docker push $env:DOCKER_IMAGE
                     """
                 }
             }
         }
+
         stage('Deploy to EC2') {
             steps {
-                sshagent(credentials: ['ec2-key']) {
-                    powershell """
-                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} `
-                            "docker pull ${DOCKER_IMAGE} && `
-                             docker stop nodeapp || true && `
-                             docker rm nodeapp || true && `
-                             docker run -d --name nodeapp -p 80:3000 ${DOCKER_IMAGE}"
-                    """
-                }
+                powershell """
+                    echo "Here you can run SSH/Ansible/Terraform commands to deploy to EC2"
+                """
             }
         }
+
         stage('Backup logs to S3') {
             steps {
-                sshagent(credentials: ['ec2-key']) {
-                    powershell """
-                        ssh ${EC2_USER}@${EC2_HOST} "docker logs nodeapp > app.log"
-                        scp ${EC2_USER}@${EC2_HOST}:app.log .
-                    """
-                }
-                withAWS(credentials: 'aws-creds', region: 'ap-south-1') {
-                    powershell "aws s3 cp app.log s3://${S3_BUCKET}/"
-                }
+                powershell """
+                    aws s3 cp C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\devops-demo-pipeline2\\logs s3://your-s3-bucket-name/ --recursive
+                """
             }
         }
     }
 }
+
 
